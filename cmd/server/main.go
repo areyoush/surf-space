@@ -10,6 +10,8 @@ import (
 	"github.com/areyoush/surfspace/internal/db"
 	"github.com/areyoush/surfspace/internal/router"
 	"github.com/areyoush/surfspace/internal/links"
+	"github.com/areyoush/surfspace/internal/cache"
+	
 )
 
 func main() {
@@ -24,9 +26,10 @@ func main() {
 	linksRepo := links.NewRepository(database)
 	linksSvc := links.NewService(linksRepo)
 	linksHandler := links.NewHandler(linksSvc)
+	redisClient := cache.New(cfg.RedisAddr, cfg.RedisPassword)
 
 	r := gin.Default()
-	router.Setup(r, authHandler, linksHandler, authRepo, cfg.JWTSecret)
+	router.Setup(r, authHandler, linksHandler, authRepo, redisClient, cfg.JWTSecret)
 	log.Println("Server starting on port", cfg.Port)
 
 	r.Run(":" + cfg.Port)

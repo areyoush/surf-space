@@ -8,15 +8,17 @@ import (
 
 
 type Config struct {
-	Port		string
-	DBHost		string
-	DBPort		string
-	DBUser		string
-	DBPassword	string
-	DBName		string
-	DBSSLMode	string
-	DBDSN		string
-	JWTSecret	string
+	Port			string
+	DBHost			string
+	DBPort			string
+	DBUser			string
+	DBPassword		string
+	DBName			string
+	DBSSLMode		string
+	DBDSN			string
+	JWTSecret		string
+	RedisAddr		string
+	RedisPassword	string
 }
 
 
@@ -30,6 +32,8 @@ func Load() *Config {
         DBName:     os.Getenv("DB_NAME"),
         DBSSLMode:  os.Getenv("DB_SSLMODE"),
         JWTSecret:  os.Getenv("JWT_SECRET"),
+        RedisAddr:     os.Getenv("REDIS_ADDR"),
+        RedisPassword: os.Getenv("REDIS_PASSWORD"),
 	}
     
 
@@ -51,6 +55,10 @@ func Load() *Config {
 	
 	if cfg.JWTSecret == "" {
 		log.Fatal("JWT_SECRET environment variable is not set")
+	}
+
+	if cfg.RedisAddr == "" {
+    	cfg.RedisAddr = "localhost:6379"
 	}
 
 	cfg.DBDSN = fmt.Sprintf(
