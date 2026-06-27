@@ -1,6 +1,7 @@
 package auth 
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -8,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var ErrEmailTaken = errors.New("email already registered") 
 
 type Service struct {
 	repo		*Repository

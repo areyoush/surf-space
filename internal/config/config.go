@@ -36,6 +36,10 @@ func Load() *Config {
 	if cfg.Port == "" {
     	cfg.Port = "8080"
 	}
+
+	if cfg.DBSSLMode == "" {
+		cfg.DBSSLMode = "disable"
+	}
 	
 	if cfg.DBHost == "" {
 		log.Fatal("DB_HOST environment variable is not set")

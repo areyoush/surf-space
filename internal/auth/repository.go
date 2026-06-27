@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/areyoush/surfspace/internal/models"
 )
 
@@ -19,6 +20,12 @@ func NewRepository(db *sql.DB) *Repository {
 func (r *Repository) CreateUser(email, passwordHash string) (*models.User, error) {
 	u := &models.User{}
 	err := r.db.QueryRow(`INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, password_hash, created_at`, email, passwordHash).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.CreatedAt)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			return nil, ErrEmailTaken
+		}
+		return nil, err
+	}
 	return u, err
 }
 
