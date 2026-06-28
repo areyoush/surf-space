@@ -2,6 +2,8 @@ package links
 
 import (
 
+	"time"
+	
 	"math/rand"
 	
 	"github.com/areyoush/surfspace/internal/models"
@@ -15,9 +17,9 @@ func NewService(repo *Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) ShortenURL(userID, originalURL string) (*models.Link, error) {
+func (s *Service) ShortenURL(userID, originalURL string, expiresAt *time.Time) (*models.Link, error) {
 	shortCode := generateShortCode()
-	return s.repo.CreateLink(userID, originalURL, shortCode)
+	return s.repo.CreateLink(userID, originalURL, shortCode, expiresAt)
 }
 
 func (s *Service) GetLink(shortCode string) (*models.Link, error) {
@@ -32,4 +34,8 @@ func generateShortCode() string {
 		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
+}
+
+func (s *Service) IncrementClickCount(shortCode string) error {
+	return s.repo.IncrementClickCount(shortCode)
 }

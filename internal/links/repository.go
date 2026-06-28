@@ -1,6 +1,9 @@
 package links
 
 import (
+
+	"time"
+
 	"database/sql"
 
 	"github.com/areyoush/surfspace/internal/models"
@@ -15,19 +18,19 @@ func NewRepository(db *sql.DB) *Repository {
 	return &Repository{db: db}
 }
 
-func (r *Repository) CreateLink(userID, originalURL, shortCode string)	(*models.Link, error) {
+func (r *Repository) CreateLink(userID, originalURL, shortCode string, expiresAt *time.Time)	(*models.Link, error) {
 	l := &models.Link{}
-	err := r.db.QueryRow(`INSERT INTO links (user_id, original_url, short_code) VALUES ($1, $2, $3) RETURNING id, user_id, original_url, short_code, click_count, created_at`, userID, originalURL, shortCode,).Scan(&l.ID, &l.UserID, &l.OriginalURL, &l.ShortCode, &l.ClickCount, &l.CreatedAt)
+	err := r.db.QueryRow(`INSERT INTO links (user_id, original_url, short_code, expires_at) VALUES ($1, $2, $3, $4) RETURNING id, user_id, original_url, short_code, click_count, created_at, expires_at`, userID, originalURL, shortCode, expiresAt,).Scan(&l.ID, &l.UserID, &l.OriginalURL, &l.ShortCode, &l.ClickCount, &l.CreatedAt, &l.ExpiresAt)
 	return l, err 
 } 
 
 func (r *Repository) GetLinkByShortCode(shortCode string) (*models.Link, error) {
 	l := &models.Link{}
 	err := r.db.QueryRow(
-		`SELECT id, user_id, original_url, short_code, click_count, created_at 
+		`SELECT id, user_id, original_url, short_code, click_count, created_at, expires_at
 		 FROM links WHERE short_code = $1`,
 		shortCode,
-	).Scan(&l.ID, &l.UserID, &l.OriginalURL, &l.ShortCode, &l.ClickCount, &l.CreatedAt)
+	).Scan(&l.ID, &l.UserID, &l.OriginalURL, &l.ShortCode, &l.ClickCount, &l.CreatedAt, &l.ExpiresAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}

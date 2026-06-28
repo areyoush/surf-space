@@ -1,6 +1,10 @@
 package links
 
 import (
+
+	"time"
+	"log"
+	
 	"net/http"
 	"github.com/gin-gonic/gin"
 )
@@ -15,6 +19,7 @@ func NewHandler(svc *Service) *Handler {
 
 type ShortenInput struct {
 	OriginalURL string `json:"original_url"`
+	ExpiresAt	*time.Time `json:"expires_at"`
 }
 
 func (h *Handler) ShortenURL(c *gin.Context) {
@@ -26,11 +31,13 @@ func (h *Handler) ShortenURL(c *gin.Context) {
 		return
 	}
 
-	link, err := h.svc.ShortenURL(userID.(string), input.OriginalURL)
+	link, err := h.svc.ShortenURL(userID.(string), input.OriginalURL, input.ExpiresAt)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not shorten URL"})
-		return
+    	log.Println("ShortenURL error:", err)
+     	c.JSON(http.StatusInternalServerError, gin.H{"error": "could not shorten URL"})
+      	return
 	}
+
 
 	c.JSON(http.StatusCreated, gin.H{
 		"short_code":   link.ShortCode,
@@ -48,7 +55,12 @@ func (h *Handler) Redirect(c *gin.Context) {
 		return
 	}
 
-	go h.svc.repo.IncrementClickCount(shortCode)
+	if link.ExpiresAt != nil && time.Now().After(*link.ExpiresAt) {
+		c.JSON(http.StatusGone, gin.H{"error": "this link has expired"})
+		return
+	}
+
+	go h.svc.IncrementClickCount(shortCode)
 
 	c.Redirect(http.StatusMovedPermanently, link.OriginalURL)
 }
