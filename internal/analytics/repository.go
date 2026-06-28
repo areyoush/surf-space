@@ -2,6 +2,8 @@ package analytics
 
 import (	
 
+	"log"
+	
 	"database/sql"
 	"github.com/areyoush/surfspace/internal/models"
 	
@@ -33,7 +35,14 @@ func (r *Repository) GetClicksByLinkID(linkID string) ([]*models.Click, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Println("failed to close rows:", err)
+		}
+	}()
+
+	
 
 	var clicks []*models.Click
 	for rows.Next() {
