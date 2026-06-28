@@ -60,7 +60,12 @@ func (h *Handler) Redirect(c *gin.Context) {
 		return
 	}
 
-	go h.svc.IncrementClickCount(shortCode)
+	go func() {
+    	if err := h.svc.IncrementClickCount(shortCode); err != nil {
+        	log.Println("failed to increment click count:", err)
+    	}
+	}()
+
 
 	c.Redirect(http.StatusMovedPermanently, link.OriginalURL)
 }

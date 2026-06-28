@@ -15,7 +15,9 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+    	log.Println("no .env file found, using system env vars")
+	}
 	cfg := config.Load()
 
 	database := db.Connect(cfg.DBDSN)
@@ -32,7 +34,9 @@ func main() {
 	router.Setup(r, authHandler, linksHandler, authRepo, redisClient, cfg.JWTSecret)
 	log.Println("Server starting on port", cfg.Port)
 
-	r.Run(":" + cfg.Port)
+	if err := r.Run(":" + cfg.Port); err != nil {
+    	log.Fatal("server failed to start: ", err)
+	}
 	
 
 	
