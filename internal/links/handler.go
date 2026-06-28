@@ -9,12 +9,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Handler struct {
-	svc *Service
+type ClickRecorder interface {
+    RecordClick(linkID, referrer, userAgent string) error
 }
 
-func NewHandler(svc *Service) *Handler {
-	return &Handler{svc: svc}
+type Handler struct {
+	svc 			*Service
+	clickRecorder	ClickRecorder	
+}
+
+func NewHandler(svc *Service, clickRecorder ClickRecorder) *Handler {
+	return &Handler{svc: svc, clickRecorder: clickRecorder}
 }
 
 type ShortenInput struct {
@@ -63,7 +68,14 @@ func (h *Handler) Redirect(c *gin.Context) {
 	go func() {
     	if err := h.svc.IncrementClickCount(shortCode); err != nil {
         	log.Println("failed to increment click count:", err)
-    	}
+     	}
+      	if h.clickRecorder != nil {
+        	referrer := c.GetHeader("Referer")
+         	userAgent := c.GetHeader("User-Agent")
+          	if err := h.clickRecorder.RecordClick(link.ID, referrer, userAgent); err != nil {
+            	log.Println("failed to record click:", err)
+           	}
+       	}
 	}()
 
 
