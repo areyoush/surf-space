@@ -42,7 +42,6 @@ func (r *Repository) GetClicksByLinkID(linkID string) ([]*models.Click, error) {
 		}
 	}()
 
-	
 
 	var clicks []*models.Click
 	for rows.Next() {

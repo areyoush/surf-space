@@ -38,7 +38,7 @@ func main() {
 	
 	linksHandler := links.NewHandler(linksSvc, analyticsSvc)
 
-	analyticsHandler := analytics.NewHandler(analyticsSvc, linksSvc)
+	analyticsHandler := analytics.NewHandler(analyticsSvc, linksSvc, cfg.BaseURL)
 
 	r := gin.Default()
 	router.Setup(r, authHandler, linksHandler, analyticsHandler, authRepo, redisClient, cfg.JWTSecret)

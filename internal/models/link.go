@@ -11,5 +11,5 @@ type Link struct {
 	ShortCode		string
 	ClickCount		int
 	CreatedAt		time.Time
-	ExpiresAt		*time.Time		
+	ExpiresAt		*time.Time	
 }	

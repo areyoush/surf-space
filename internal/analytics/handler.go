@@ -4,16 +4,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/skip2/go-qrcode"
 	"github.com/areyoush/surfspace/internal/links"
 )
 
 type Handler struct {
 	svc      		*Service
-	linksSvc 		*links.Service		
+	linksSvc 		*links.Service
+	baseURL			string
 }
 
-func NewHandler(svc *Service, linksSvc *links.Service) *Handler {
-	return &Handler{svc: svc, linksSvc: linksSvc}
+func NewHandler(svc *Service, linksSvc *links.Service, baseURL string) *Handler {
+	return &Handler{svc: svc, linksSvc: linksSvc, baseURL: baseURL}
 }
 
 func (h *Handler) GetAnalytics(c *gin.Context) {
@@ -46,4 +48,32 @@ func (h *Handler) GetAnalytics(c *gin.Context) {
 
 func RegisterRoutes(rg *gin.RouterGroup, h *Handler) {
 	rg.GET("/links/:code/analytics", h.GetAnalytics)
+	rg.GET("/links/:code/qr", h.GetQR)
 }
+
+func (h *Handler) GetQR(c *gin.Context) {
+	shortCode := c.Param("code")
+	userID := c.MustGet("userID").(string)
+
+	link, err := h.linksSvc.GetLink(shortCode)
+	if err != nil || link == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "link not found"})
+		return
+	}
+
+	if link.UserID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "you don't own this link"})
+		return
+	}
+
+	fullURL := h.baseURL + "/" + shortCode
+
+	pngBytes, err := qrcode.Encode(fullURL, qrcode.Medium, 256)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate QR code"})
+		return
+	}
+
+	c.Data(http.StatusOK, "image/png", pngBytes)
+}
+

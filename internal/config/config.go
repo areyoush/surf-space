@@ -19,21 +19,25 @@ type Config struct {
 	JWTSecret		string
 	RedisAddr		string
 	RedisPassword	string
+	BaseURL			string
 }
 
 
 func Load() *Config {
 	cfg := &Config{
-		Port:		os.Getenv("PORT"),
-        DBHost:     os.Getenv("DB_HOST"),
-        DBPort:     os.Getenv("DB_PORT"),
-        DBUser:     os.Getenv("DB_USER"),
-        DBPassword: os.Getenv("DB_PASSWORD"),
-        DBName:     os.Getenv("DB_NAME"),
-        DBSSLMode:  os.Getenv("DB_SSLMODE"),
-        JWTSecret:  os.Getenv("JWT_SECRET"),
-        RedisAddr:     os.Getenv("REDIS_ADDR"),
-        RedisPassword: os.Getenv("REDIS_PASSWORD"),
+		
+		Port:			os.Getenv("PORT"),
+        DBHost:     	os.Getenv("DB_HOST"),
+        DBPort:     	os.Getenv("DB_PORT"),
+        DBUser:     	os.Getenv("DB_USER"),
+        DBPassword: 	os.Getenv("DB_PASSWORD"),
+        DBName:     	os.Getenv("DB_NAME"),
+        DBSSLMode:  	os.Getenv("DB_SSLMODE"),
+        JWTSecret:  	os.Getenv("JWT_SECRET"),
+        RedisAddr:     	os.Getenv("REDIS_ADDR"),
+        RedisPassword:	os.Getenv("REDIS_PASSWORD"),
+        BaseURL:		os.Getenv("BASE_URL"),		
+
 	}
     
 
@@ -59,6 +63,10 @@ func Load() *Config {
 
 	if cfg.RedisAddr == "" {
     	cfg.RedisAddr = "localhost:6379"
+	}
+
+	if cfg.BaseURL == "" {
+		cfg.BaseURL = "http://localhost:8080"
 	}
 
 	cfg.DBDSN = fmt.Sprintf(
